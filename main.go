@@ -1,41 +1,73 @@
-package main
+package main // Define the package name
 
-// ------------------------------------------------------first one to calculate the Area of wo objects-------------------------------------------------------------//
+import (
+	"bufio" // Import the bufio package for reading files
+	"fmt"   // Import the fmt package for printing to the terminal
+	"io"    // Import the io package for handling file I/O
+	"os"    // Import the os package for accessing command-line arguments and files
+)
 
-// import "fmt"
+// Define an interface for a file that can be opened and read
+type file interface {
+	openAndReadFile() (string, error)
+}
 
-// type triangle struct {
-// 	height float64
-// 	base   float64
-// }
+// Define a type for a filename
+type name string
 
-// type square struct {
-// 	sideLength float64
-// }
+// Define the main function
+func main() {
+	// Get the filename from the command-line arguments
+	filename := os.Args[1]
+	// Create a name object from the filename
+	n := name(filename)
+	// Call the printContent function with the name object as an argument
+	printContent(n)
+}
 
-// type shape interface {
-// 	getArea() float64
-// }
+// Define the openAndReadFile method for the name type
+func (n name) openAndReadFile() (string, error) {
+	// Open the file with the name of the object
+	file, err := os.Open(string(n))
+	if err != nil {
+		return "", err
+	}
+	// Defer closing the file until the end of the function
+	defer file.Close()
 
-// func (t triangle) getArea() float64 {
-// 	return 0.5 * t.base * t.height
-// }
+	// Create a string variable to hold the contents of the file
+	var content string
+	// Create a bufio.Reader to read the file
+	reader := bufio.NewReader(file)
+	// Loop through the file line by line
+	for {
+		// Read the next line of the file
+		line, err := reader.ReadString('\n')
+		// If there is an error other than EOF, return the error
+		if err != nil && err != io.EOF {
+			return "", err
+		}
+		// Append the line to the content variable
+		content += line
+		// If we have reached the end of the file, break out of the loop
+		if err == io.EOF {
+			break
+		}
+	}
 
-// func (sq square) getArea() float64 {
-// 	return sq.sideLength * sq.sideLength
-// }
+	// Return the contents of the file and any error that occurred
+	return content, nil
+}
 
-// func printArea(sh shape) {
-// 	fmt.Println(sh.getArea())
-
-// }
-
-// func main() {
-
-// 	t := triangle{height: 10, base: 10}
-// 	sq := square{sideLength: 10}
-
-// 	printArea(t)
-// 	printArea(sq)
-
-// }
+// Define the printContent function
+func printContent(f file) {
+	// Call the openAndReadFile method on the file object
+	content, err := f.openAndReadFile()
+	// If there is an error, print the error message and return
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// Print the contents of the file to the terminal
+	fmt.Println(content)
+}
